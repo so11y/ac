@@ -117,8 +117,10 @@ export class Tween<
     return this;
   }
   public then(next: Tween) {
-    this.ac.addEventListener(AnimationType.END, () => {
-      next.ac.play();
+    this.ac.addEventListener(AnimationType.PAUSED, () => next.ac.paused());
+    this.ac.addEventListener(AnimationType.END, (e) => {
+      const { detail } = e as AnimationEvent;
+      detail.isReverse ? next.ac.reverse() : next.ac.play();
     });
   }
 }

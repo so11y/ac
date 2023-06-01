@@ -27,7 +27,6 @@ export class AnimationHelper {
   private getEasingTime() {
     const { timeLine, duration } = this.ac;
     const { currentTime, starTime } = timeLine;
-    console.log(currentTime, starTime);
     const percentage = Number(((currentTime - starTime) / duration).toFixed(6));
     return percentage;
   }
