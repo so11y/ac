@@ -1,9 +1,12 @@
 import { AnimationController } from "./AnimationController";
+import { ScrollTween } from "./ScrollTween";
 import { ColorTween, Tween } from "./Tween";
 
 const div1 = document.querySelector("#div1")! as HTMLElement;
 const div2 = document.querySelector("#div2")! as HTMLElement;
 const div3 = document.querySelector("#div3")! as HTMLElement;
+const div4 = document.querySelector("#div4")! as HTMLElement;
+const div5 = document.querySelector("#div5")! as HTMLElement;
 const ac = new AnimationController(1000);
 const t1 = new Tween(30, 100).animate(ac).builder((value) => {
   div1.style.width = `${value}px`;
@@ -30,7 +33,40 @@ const t2 = new Tween(
 new Tween(0, 1239599).animate(ac).builder((value) => {
   div3.textContent = Number(value.toFixed(0)).toLocaleString();
 });
-// t1.then(t2);
+
+const s1 = ScrollTween.form(
+  {
+    x: -window.innerWidth * 1,
+    color: new ColorTween("#7c29b0"),
+  },
+  {
+    target: "#div4",
+    duration: 1000,
+    easing: "bounceOut",
+  }
+).builder((value) => {
+  console.log(value.x);
+  div4.style.translate = `${value.x}px 0px`;
+  div4.style.color = value.color;
+});
+
+const s2 = ScrollTween.form(
+  {
+    x: window.innerWidth * 1,
+    color: new ColorTween("#7c29b0"),
+  },
+  {
+    target: "#div5",
+    duration: 1000,
+    easing: "bounceOut",
+  }
+).builder((value) => {
+  console.log(value.x);
+  div5.style.translate = `${value.x}px 0px`;
+  div5.style.color = value.color;
+});
+
+s1.then(s2)
 
 document.querySelector("#button1")!.addEventListener("click", () => ac.play());
 document

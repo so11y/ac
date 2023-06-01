@@ -5,9 +5,14 @@ import {
 } from "./AnimationController";
 import * as easing from "./easing";
 
-type TweenBuilderTask<T> = (v: T) => void;
+export type TweenBuilderTask<T> = (v: T) => void;
 
-type TweenStartType<T> = T extends number ? number : T;
+export type TweenStartType<T> = T extends number ? number : T;
+
+export type TweenSource =
+  | number
+  | Record<string, number | ColorTween>
+  | (number | ColorTween)[];
 
 type convertType<T> = T extends number
   ? number
@@ -17,33 +22,38 @@ type convertType<T> = T extends number
       [P in keyof T]: string;
     };
 
-interface TweenOptions {
+export interface TweenUserOptions {
   easing?: keyof typeof easing;
   delayed?: number;
   initStart?: boolean;
 }
+export type TweenOptions = Required<Omit<TweenUserOptions, "delayed">> &
+  Pick<TweenUserOptions, "delayed">;
 
 export class Tween<
-  T extends
-    | number
-    | Record<string, number | ColorTween>
-    | (number | ColorTween)[] = any,
+  T extends TweenSource = any,
   G extends TweenStartType<T> = any
 > {
   private builderTask!: TweenBuilderTask<T>;
-  private options!: Required<Omit<TweenOptions, "delayed">> &
+  protected options!: Required<Omit<TweenOptions, "delayed">> &
     Pick<TweenOptions, "delayed">;
-  private ac!: AnimationController;
-  constructor(private begin: T, private end: G, options = {} as TweenOptions) {
+  protected ac!: AnimationController;
+  constructor(
+    protected begin: T,
+    protected end: G,
+    options = {} as TweenUserOptions
+  ) {
     const {
       easing = "linear",
       delayed = undefined,
       initStart = true,
+      ...t
     } = options;
     this.options = {
       easing,
       delayed,
       initStart,
+      ...t,
     };
   }
 
@@ -116,6 +126,7 @@ export class Tween<
     }
     return this;
   }
+
   public then(next: Tween) {
     this.ac.addEventListener(AnimationType.PAUSED, () => next.ac.paused());
     this.ac.addEventListener(AnimationType.END, (e) => {
