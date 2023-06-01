@@ -15,6 +15,7 @@ const t2 = new Tween(
   [100, new ColorTween("#200531"), 0],
   [200, new ColorTween("#124618"), 60]
 )
+// .animate(new AnimationController(ac))  然后把下面的 t1.then(t2); 删掉 可以一个控制器控制多个动画
   .animate(new AnimationController(3000))
   .builder((value) => {
     const [height, backgroundColor, marginLeft] = value;
