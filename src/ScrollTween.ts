@@ -30,7 +30,6 @@ function findParentScroll(el: HTMLElement) {
 function isInContainer(
   el: HTMLElement,
   container: any,
-  direction: "vertical" | "horizontal" = "vertical"
 ) {
   const elRect = el.getBoundingClientRect();
   let containerRect;
