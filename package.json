@@ -1,4 +1,7 @@
 {
+  "scripts": {
+    "dev":"npx lent"
+  },
   "dependencies": {
     "lent": "^2.1.7"
   }
