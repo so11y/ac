@@ -10,11 +10,10 @@ import {
 type ScrollTweenUserOptions = TweenUserOptions & {
   target: string;
   duration?: number;
-  direction?: "vertical" | "horizontal";
 };
 
 type ScrollTweenOptions = TweenOptions &
-  Pick<ScrollTweenUserOptions, "target" | "duration" | "direction">;
+  Pick<ScrollTweenUserOptions, "target" | "duration">;
 
 function findParentScroll(el: HTMLElement) {
   const parent = el.parentElement;
@@ -27,10 +26,7 @@ function findParentScroll(el: HTMLElement) {
   }
 }
 
-function isInContainer(
-  el: HTMLElement,
-  container: any,
-) {
+function isInContainer(el: HTMLElement, container: any) {
   const elRect = el.getBoundingClientRect();
   let containerRect;
   if ([window, document, document.body, null, undefined].includes(container)) {
