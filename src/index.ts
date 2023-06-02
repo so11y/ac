@@ -1,5 +1,7 @@
-import demo1 from "../example/demo1";
-// import demo2 from "../example/demo2";
-// import demo3 from "../example/demo3";
+import demo from "../example/demo1";
+// import demo from "../example/demo2";
+// import demo from "../example/demo3";
+// import demo from "../example/demo4";
+demo();
 
-demo1();
+

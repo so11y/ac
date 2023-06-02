@@ -1,13 +1,14 @@
 import { AnimationController, AnimationType } from "./AnimationController";
 
 export class AnimationHelper {
-  public abort!: AbortController;
   public RAFId?: number = undefined;
   constructor(private ac: AnimationController) {}
 
   public switchTypeAndAbort(type: AnimationType) {
-    this.ac.animationType = type;
-    this.abort?.abort();
+    if (type !== AnimationType.EXECUTE) {
+      this.ac.prevAnimationType = this.ac.animationType;
+      this.ac.animationType = type;
+    }
     if (this.RAFId) {
       cancelAnimationFrame(this.RAFId!);
     }
@@ -24,9 +25,9 @@ export class AnimationHelper {
     this.ac.dispatchEvent(event);
   }
 
-  private getEasingTime() {
+  public getEasingTime() {
     const { timeLine, duration } = this.ac;
-    const { currentTime, starTime } = timeLine;
+    const { currentTime, startTime: starTime } = timeLine;
     const percentage = Number(((currentTime - starTime) / duration).toFixed(6));
     return percentage;
   }
@@ -41,36 +42,31 @@ export class AnimationHelper {
   }
 
   public isDurationEnd() {
-    const { starTime, currentTime } = this.ac.timeLine;
+    const { startTime: starTime, currentTime } = this.ac.timeLine;
     return (
       Math.min(currentTime - starTime, this.ac.duration) === this.ac.duration
     );
-  }
-
-  public isInterruption() {
-    const prevAnimationType = this.ac.animationType;
-    return prevAnimationType !== AnimationType.EXECUTE;
   }
 
   public updateCurrentTime() {
     this.ac.timeLine.currentTime = performance.now();
   }
 
-  //这里我算不明白了。
-  //现在是开始 -> 暂停 -> 反转 正常
-  //接着在点击暂停 ->  反转 不正常
   public reStore() {
-    this.abort = new AbortController();
-    const now = performance.now();
     const { timeLine, animationType, duration } = this.ac;
-    const differenceTime = timeLine.currentTime - timeLine.starTime;
+    const now = performance.now();
+    const differenceTime = timeLine.currentTime - timeLine.startTime;
     if (animationType === AnimationType.PAUSED) {
-      const reversedTime = duration - differenceTime;
-      timeLine.starTime = now - reversedTime;
-    } else if (timeLine.isReverse) {
-      timeLine.starTime = now - (duration - differenceTime);
+      if (timeLine.isReverse) {
+        const reversedTime = duration - differenceTime;
+        timeLine.startTime = now - reversedTime;
+      } else {
+        timeLine.startTime = now - differenceTime;
+      }
+    } else if (animationType === AnimationType.REVERSAL) {
+      timeLine.startTime = now - (duration - differenceTime);
     } else {
-      timeLine.starTime = now;
+      timeLine.startTime = now;
       timeLine.currentTime = now;
     }
     timeLine.lastFrame = false;

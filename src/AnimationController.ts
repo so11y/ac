@@ -12,7 +12,7 @@ export enum AnimationType {
 export type AnimateTask = (abort: AbortController["abort"]) => void;
 
 export interface AnimationControllerTimeLine {
-  starTime: number;
+  startTime: number;
   currentTime: number;
   lastFrame: boolean;
   isReverse: boolean;
@@ -26,64 +26,65 @@ export interface AnimationEvent extends Event {
 
 export class AnimationController extends EventTarget {
   animationType: AnimationType = AnimationType.NONE;
+  prevAnimationType: AnimationType = AnimationType.NONE;
+  isRunning: boolean = false;
   timeLine: AnimationControllerTimeLine = {} as AnimationControllerTimeLine;
   private animationHelper: AnimationHelper = new AnimationHelper(this);
   constructor(public duration: number) {
     super();
+    this.timeLine.startTime = 0;
+    this.timeLine.currentTime = 0;
   }
-
-  // Todo repeat
 
   reverse() {
     this.timeLine.isReverse = true;
-    this.play(AnimationType.REVERSAL);
+    const { animationHelper, timeLine } = this;
+    animationHelper.switchTypeAndAbort(AnimationType.REVERSAL);
+    // timeLine.startTime =
+    //   performance.now() - (this.duration - timeLine.currentTime);
+    this.requestAnimationFrame();
     this.addEventListener(AnimationType.END, () => {
       this.timeLine.isReverse = false;
     });
   }
 
-  public play(
-    type: AnimationType.START | AnimationType.REVERSAL = AnimationType.START
-  ) {
-    const { animationHelper } = this;
-    const needReNotify = this.animationType !== AnimationType.PAUSED;
-    if (needReNotify) {
-      animationHelper.switchTypeAndAbort(type);
-    }
-    if (type === AnimationType.START) {
-      this.timeLine.isReverse = false;
-    }
-    this.requestAnimationFrame(() => {
-      animationHelper.notifyEvent(AnimationType.EXECUTE);
-    });
+  public play() {
+    const { animationHelper, timeLine } = this;
+    animationHelper.switchTypeAndAbort(AnimationType.START);
+    // const differenceTime = timeLine.currentTime - timeLine.startTime;
+    // if (this.timeLine.isReverse) {
+    //   // timeLine.startTime =differenceTime;
+    // } else {
+    //   timeLine.startTime = performance.now() - timeLine.currentTime;
+    // }
+    this.timeLine.isReverse = false;
+    this.requestAnimationFrame();
   }
 
   public paused() {
-    const { animationHelper } = this;
+    const { animationHelper, timeLine } = this;
+    // timeLine.currentTime = performance.now() - timeLine.startTime;
     animationHelper.switchTypeAndAbort(AnimationType.PAUSED);
   }
 
-  private requestAnimationFrame(task: AnimateTask) {
+  private requestAnimationFrame() {
     this.animationHelper.reStore();
     const { animationHelper } = this;
     const motion = () => {
+      if (this.isRunning === false) return;
+      animationHelper.notifyEvent(AnimationType.EXECUTE);
       animationHelper.updateCurrentTime();
       animationHelper.RAFId = requestAnimationFrame(() => {
         if (animationHelper.isDurationEnd()) {
           this.timeLine.lastFrame = true;
-          task(animationHelper.abort.abort);
+          this.isRunning = false;
           animationHelper.switchTypeAndAbort(AnimationType.END);
-        } else if (animationHelper.isInterruption()) {
-          animationHelper.switchTypeAndAbort(AnimationType.PAUSED);
-        }
-        if (!animationHelper.abort.signal.aborted) {
-          this.animationType = AnimationType.EXECUTE;
-          task(animationHelper.abort.abort);
+        } else {
           motion();
         }
       });
     };
-    this.animationType = AnimationType.EXECUTE;
+    this.isRunning = true;
     motion();
   }
 }

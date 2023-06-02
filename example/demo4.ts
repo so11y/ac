@@ -2,13 +2,10 @@ import { AnimationController } from "../src/AnimationController";
 import { Tween } from "../src/Tween";
 
 export default () => {
-  const div1 = document.querySelector("#div1")! as HTMLElement;
-  const ac = new AnimationController(3000);
-
-  new Tween(30, 500).animate(ac).builder((value) => {
-    div1.style.width = `${value}px`;
-    div1.style.height = `50px`;
-    div1.style.backgroundColor = "red";
+  const div3 = document.querySelector("#div3")! as HTMLElement;
+  const ac = new AnimationController(1000);
+  new Tween(0, 1239599).animate(ac).builder((value) => {
+    div3.textContent = Number(value.toFixed(0)).toLocaleString();
   });
 
   document
