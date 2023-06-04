@@ -74,26 +74,21 @@ export class Keyframe<T extends RecordTweenOptions = any> {
         tw.builder(taskFn as any);
       }
     };
-    ac.addEventListener(AnimationType.NONE, (e) => {
+    const handleRunning = (timeLine = 0, isReverse = false) => {
       maybeInitTw();
       tw.running({
         detail: {
-          timeLine: 0,
-          isReverse: false,
+          timeLine,
+          isReverse,
         },
       } as any);
-    });
+    };
+    ac.addEventListener(AnimationType.NONE, (e) => handleRunning());
     ac.addEventListener(AnimationType.EXECUTE, (e) => {
       const { detail } = e as AnimationEvent;
       const progress = detail.timeLine;
       if (progress >= delayedStart && progress <= delayedEnd) {
-        maybeInitTw();
-        tw.running({
-          detail: {
-            timeLine: prevDelay(progress),
-            isReverse: detail.isReverse,
-          },
-        } as any);
+        handleRunning(prevDelay(progress), detail.isReverse);
       }
     });
   }
