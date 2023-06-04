@@ -12,10 +12,9 @@ export enum AnimationType {
 export type AnimateTask = (abort: AbortController["abort"]) => void;
 
 export interface AnimationControllerTimeLine {
-  startTime: number;
-  currentTime: number;
   lastFrame: boolean;
-  isReverse: boolean;
+  progress: number;
+  direction: number;
 }
 export interface AnimationEvent extends Event {
   detail: {
@@ -32,48 +31,46 @@ export class AnimationController extends EventTarget {
   private animationHelper: AnimationHelper = new AnimationHelper(this);
   constructor(public duration: number) {
     super();
-    this.timeLine.startTime = 0;
-    this.timeLine.currentTime = 0;
   }
 
   reverse() {
-    this.timeLine.isReverse = true;
-    const { animationHelper, timeLine } = this;
+    const { animationHelper } = this;
+    this.timeLine.direction = -1;
+    this.isRunning = true;
     animationHelper.switchTypeAndAbort(AnimationType.REVERSAL);
-    // timeLine.startTime =
-    //   performance.now() - (this.duration - timeLine.currentTime);
     this.requestAnimationFrame();
-    this.addEventListener(AnimationType.END, () => {
-      this.timeLine.isReverse = false;
-    });
+  }
+
+  reStart() {
+    const { animationHelper } = this;
+    this.isRunning = false;
+    this.animationHelper.reStore();
+    animationHelper.switchTypeAndAbort(AnimationType.NONE);
+    animationHelper.notifyEvent(AnimationType.EXECUTE);
   }
 
   public play() {
-    const { animationHelper, timeLine } = this;
+    const { animationHelper } = this;
+    this.isRunning = true;
+    this.timeLine.direction = 1;
     animationHelper.switchTypeAndAbort(AnimationType.START);
-    // const differenceTime = timeLine.currentTime - timeLine.startTime;
-    // if (this.timeLine.isReverse) {
-    //   // timeLine.startTime =differenceTime;
-    // } else {
-    //   timeLine.startTime = performance.now() - timeLine.currentTime;
-    // }
-    this.timeLine.isReverse = false;
     this.requestAnimationFrame();
   }
 
   public paused() {
-    const { animationHelper, timeLine } = this;
-    // timeLine.currentTime = performance.now() - timeLine.startTime;
+    const { animationHelper } = this;
+    this.isRunning = false;
     animationHelper.switchTypeAndAbort(AnimationType.PAUSED);
   }
 
   private requestAnimationFrame() {
-    this.animationHelper.reStore();
     const { animationHelper } = this;
+    const startTime = performance.now();
+    const startProgress = this.timeLine.progress;
     const motion = () => {
       if (this.isRunning === false) return;
       animationHelper.notifyEvent(AnimationType.EXECUTE);
-      animationHelper.updateCurrentTime();
+      animationHelper.updateProgress(startTime, startProgress);
       animationHelper.RAFId = requestAnimationFrame(() => {
         if (animationHelper.isDurationEnd()) {
           this.timeLine.lastFrame = true;
@@ -84,7 +81,6 @@ export class AnimationController extends EventTarget {
         }
       });
     };
-    this.isRunning = true;
     motion();
   }
 }

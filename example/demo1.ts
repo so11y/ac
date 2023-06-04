@@ -20,4 +20,7 @@ export default () => {
   document
     .querySelector("#button3")!
     .addEventListener("click", () => ac.reverse());
+  document
+    .querySelector("#button4")!
+    .addEventListener("click", () => ac.reStart());
 };
