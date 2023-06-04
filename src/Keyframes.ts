@@ -76,7 +76,7 @@ export class Keyframe<T extends RecordTweenOptions = any> {
     ac.addEventListener(AnimationType.EXECUTE, (e) => {
       const { detail } = e as AnimationEvent;
       const progress = Number(detail.timeLine.toFixed(1));
-      if (progress > delayedStart && progress <= delayedEnd) {
+      if (progress > delayedStart && progress < delayedEnd) {
         maybeInitTw();
         detail.isReverse ? ac_.reverse() : ac_.play();
       }

@@ -55,6 +55,20 @@ export class AnimationController extends EventTarget {
     this.requestAnimationFrame();
   }
 
+  finis() {
+    return new Promise<void>((r, s) => {
+      if (this.animationType === AnimationType.END) {
+        r();
+      } else {
+        const handleEnd = () => {
+          r();
+          this.removeEventListener(AnimationType.END, handleEnd);
+        };
+        this.addEventListener(AnimationType.END, handleEnd);
+      }
+    });
+  }
+
   public paused() {
     const { animationHelper } = this;
     this.isRunning = false;
@@ -79,6 +93,7 @@ export class AnimationController extends EventTarget {
             animationHelper.switchTypeAndAbort(AnimationType.END);
           });
         } else {
+          this.animationType = AnimationType.EXECUTE;
           animationHelper.notifyEvent(AnimationType.EXECUTE);
           motion();
         }

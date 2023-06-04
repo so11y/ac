@@ -98,9 +98,6 @@ export class Tween<
       }
       //@ts-ignore
       const currentValue = (end - begin) * easing_ + begin;
-      if(Number.isNaN(currentValue)){
-        debugger
-      }
       return currentValue;
     };
     if (typeof this.begin === "number") {

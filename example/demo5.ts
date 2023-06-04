@@ -18,25 +18,32 @@ export default () => {
   const ac = new AnimationController(3000);
 
   new Keyframes(div3, [
-    new Keyframe({ translateX: 100 }),
-    new Keyframe({ translateY: 100, width: 50, height: 50 }),
+    new Keyframe({ translateX: 50 },{
+      // easing:"bounceInOut"
+    }),
+    new Keyframe({ translateY: 50,
+      // width: 50, height: 50
+     }),
     new Keyframe({
       translateX: 0,
-      borderRadius: 20,
-      backgroundColor: new ColorTween("#7c29b0"),
+      // borderRadius: 20,
+      // backgroundColor: new ColorTween("#7c29b0"),
+    },{
+        // easing:"bounceIn"
     }),
-    new Keyframe({ translateY: 0, width: 10, height: 10 }),
+    // new Keyframe({ translateY: 0,
+    //   //  width: 10, height: 10
+    //   }),
   ])
     .animate(ac)
-
     .builder((source) => {
-      source.width && (div3.style.width = `${source.width}px `);
-      source.height && (div3.style.height = `${source.height}px `);
+      // source.width && (div3.style.width = `${source.width}px `);
+      // source.height && (div3.style.height = `${source.height}px `);
       div3.style.translate = `${source.translateX || 0}px ${
         source.translateY || 0
       }px`;
-      div3.style.borderRadius = `${source.borderRadius || 0}px`;
-      div3.style.backgroundColor = source.backgroundColor;
+      // div3.style.borderRadius = `${source.borderRadius || 0}px`;
+      // div3.style.backgroundColor = source.backgroundColor;
     });
 
   document
