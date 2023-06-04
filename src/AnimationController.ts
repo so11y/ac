@@ -12,7 +12,6 @@ export enum AnimationType {
 export type AnimateTask = (abort: AbortController["abort"]) => void;
 
 export interface AnimationControllerTimeLine {
-  lastFrame: boolean;
   progress: number;
   direction: number;
 }
@@ -74,9 +73,11 @@ export class AnimationController extends EventTarget {
           startProgress
         );
         if (isDurationEnd) {
-          this.timeLine.lastFrame = true;
           this.isRunning = false;
-          animationHelper.switchTypeAndAbort(AnimationType.END);
+          animationHelper.notifyEvent(AnimationType.EXECUTE);
+          requestAnimationFrame(() => {
+            animationHelper.switchTypeAndAbort(AnimationType.END);
+          });
         } else {
           animationHelper.notifyEvent(AnimationType.EXECUTE);
           motion();

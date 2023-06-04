@@ -5,13 +5,15 @@ export default () => {
   const div1 = document.querySelector("#div1")! as HTMLElement;
   const ac = new AnimationController(3000);
 
-  new Tween(30, 500,{
-    // easing:"bounceOut"
-  }).animate(ac).builder((value) => {
-    div1.style.width = `${value}px`;
-    div1.style.height = `50px`;
-    div1.style.backgroundColor = "red";
-  });
+  new Tween(30, 500, {
+    easing: "bounceOut",
+  })
+    .animate(ac)
+    .builder((value) => {
+      div1.style.width = `${value}px`;
+      div1.style.height = `50px`;
+      div1.style.backgroundColor = "red";
+    });
 
   document
     .querySelector("#button1")!

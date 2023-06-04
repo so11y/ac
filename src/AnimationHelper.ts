@@ -15,13 +15,11 @@ export class AnimationHelper {
   }
 
   public notifyEvent(eventName: string) {
-    const {
-      timeLine: { progress },
-    } = this.ac;
-    console.log(progress);
+    const { timeLine } = this.ac;
+    console.log(timeLine,'----');
     const event = new CustomEvent(eventName, {
       detail: {
-        timeLine: progress,
+        timeLine: timeLine.progress,
       },
     });
     this.ac.dispatchEvent(event);
@@ -39,7 +37,6 @@ export class AnimationHelper {
 
   public reStore() {
     const { timeLine } = this.ac;
-    timeLine.lastFrame = false;
     timeLine.progress = 0;
     timeLine.direction = 1;
   }
