@@ -60,25 +60,40 @@ export class Keyframe<T extends RecordTweenOptions = any> {
     }
   ) {
     const { ac, index, length, taskFn } = options;
-    const ac_ = new AnimationController(ac.duration / length);
     const delayedStart = index / length;
     const delayedEnd = (index + 1) / length;
+    const prevDelay = (progress: number) => {
+      if (index === 0) return progress / delayedEnd;
+      return (progress - delayedStart) / (delayedEnd - delayedStart);
+    };
     let tw: Tween;
-    let maybeInitTw = () => {
+    const maybeInitTw = () => {
       if (!tw) {
         const beginSource = buildSource(this.source, el);
         tw = tw || new Tween(beginSource, this.source, this.options);
-        tw.animate(ac_);
         tw.builder(taskFn as any);
       }
     };
-    ac.addEventListener(AnimationType.PAUSED, () => ac_.paused());
+    ac.addEventListener(AnimationType.NONE, (e) => {
+      maybeInitTw();
+      tw.running({
+        detail: {
+          timeLine: 0,
+          isReverse: false,
+        },
+      } as any);
+    });
     ac.addEventListener(AnimationType.EXECUTE, (e) => {
       const { detail } = e as AnimationEvent;
-      const progress = Number(detail.timeLine.toFixed(1));
-      if (progress > delayedStart && progress < delayedEnd) {
+      const progress = detail.timeLine;
+      if (progress >= delayedStart && progress <= delayedEnd) {
         maybeInitTw();
-        detail.isReverse ? ac_.reverse() : ac_.play();
+        tw.running({
+          detail: {
+            timeLine: prevDelay(progress),
+            isReverse: detail.isReverse,
+          },
+        } as any);
       }
     });
   }
