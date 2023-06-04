@@ -83,6 +83,7 @@ export class Keyframe<T extends RecordTweenOptions = any> {
         },
       } as any);
     };
+    //todo lastFrame
     ac.addEventListener(AnimationType.NONE, (e) => handleRunning());
     ac.addEventListener(AnimationType.EXECUTE, (e) => {
       const { detail } = e as AnimationEvent;

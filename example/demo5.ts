@@ -21,21 +21,25 @@ export default () => {
     new Keyframe({ width: 100 }),
     new Keyframe({
       height: 100,
-      // width: 50, height: 50
+      backgroundColor: new ColorTween("#7c29b0"),
     }),
-    // new Keyframe({
-    //   width: 10,
-    // }),
+    new Keyframe({
+      translateX: 100,
+    }),
+    new Keyframe({
+      translateY: 100,
+      backgroundColor: new ColorTween("#000000"),
+    }),
   ])
     .animate(ac)
     .builder((source) => {
       source.width && (div3.style.width = `${source.width}px `);
       source.height && (div3.style.height = `${source.height}px `);
-      // div3.style.translate = `${source.translateX || 0}px ${
-      //   source.translateY || 0
-      // }px`;
+      div3.style.translate = `${source.translateX || 0}px ${
+        source.translateY || 0
+      }px`;
       // div3.style.borderRadius = `${source.borderRadius || 0}px`;
-      // div3.style.backgroundColor = source.backgroundColor;
+      div3.style.backgroundColor = source.backgroundColor;
     });
 
   document
