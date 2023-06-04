@@ -16,10 +16,10 @@ export class AnimationHelper {
 
   public notifyEvent(eventName: string) {
     const { timeLine } = this.ac;
-    console.log(timeLine,'----');
     const event = new CustomEvent(eventName, {
       detail: {
         timeLine: timeLine.progress,
+        isReverse: timeLine.direction === -1,
       },
     });
     this.ac.dispatchEvent(event);

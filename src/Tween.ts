@@ -9,6 +9,8 @@ export type TweenBuilderTask<T> = (v: T) => void;
 
 export type TweenStartType<T> = T extends number ? number : T;
 
+export type RecordTweenOptions = Record<string, number | ColorTween>;
+
 export type TweenSource =
   | number
   | Record<string, number | ColorTween>
@@ -62,13 +64,19 @@ export class Tween<
     this.ac.addEventListener(AnimationType.EXECUTE, this.running);
     return this;
   }
+  handleDelayed({ detail }: AnimationEvent) {
+    if (this.options.delayed! > detail.timeLine) {
+      return true;
+    }
+    return false;
+  }
 
   running = (event: Event) => {
-    if (this.options.delayed) {
-      const { detail } = event as AnimationEvent;
-      if (this.options.delayed > detail.timeLine) {
-        return;
-      }
+    if (
+      this.options.delayed !== undefined &&
+      this.handleDelayed(event as AnimationEvent)
+    ) {
+      return;
     }
     const currentValue = this.getAnimationTimeLineValue(
       event as AnimationEvent
@@ -81,8 +89,8 @@ export class Tween<
       detail: { timeLine },
     } = event;
     const getTimeLineValue = (
-      begin: number | ColorTween,
-      end: number | ColorTween
+      begin: number | ColorTween = 0 ,
+      end: number | ColorTween  = 0
     ) => {
       const easing_ = easing[this.options.easing](timeLine);
       if (begin instanceof ColorTween && end instanceof ColorTween) {
@@ -90,6 +98,9 @@ export class Tween<
       }
       //@ts-ignore
       const currentValue = (end - begin) * easing_ + begin;
+      if(Number.isNaN(currentValue)){
+        debugger
+      }
       return currentValue;
     };
     if (typeof this.begin === "number") {
@@ -125,6 +136,10 @@ export class Tween<
       } as any);
     }
     return this;
+  }
+
+  destroy() {
+    this.ac.removeEventListener(AnimationType.EXECUTE, this.running);
   }
 
   public then(next: Tween) {

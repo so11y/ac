@@ -6,6 +6,7 @@ import {
   TweenStartType,
   TweenUserOptions,
 } from "./Tween";
+import { buildSource, findParentScroll, isInContainer } from "./tweenHelper";
 
 type ScrollTweenUserOptions = TweenUserOptions & {
   target: string;
@@ -14,60 +15,6 @@ type ScrollTweenUserOptions = TweenUserOptions & {
 
 type ScrollTweenOptions = TweenOptions &
   Pick<ScrollTweenUserOptions, "target" | "duration">;
-
-function findParentScroll(el: HTMLElement) {
-  const parent = el.parentElement;
-  if (parent && parent !== document.body) {
-    const { overflow } = getComputedStyle(parent);
-    if (overflow === "auto" || overflow === "scroll") {
-      return parent;
-    }
-    return parent;
-  }
-}
-
-function isInContainer(el: HTMLElement, container: any) {
-  const elRect = el.getBoundingClientRect();
-  let containerRect;
-  if ([window, document, document.body, null, undefined].includes(container)) {
-    containerRect = {
-      top: 0,
-      left: 0,
-      bottom: window.innerHeight,
-      right: window.innerWidth,
-    };
-  } else {
-    containerRect = container.getBoundingClientRect();
-  }
-  return (
-    elRect.top >= containerRect.top && elRect.bottom <= containerRect.bottom
-  );
-}
-
-function rgbaToHex(color: string) {
-  const [r, g, b] = color
-    .replace("rgb(", "")
-    .replace(")", "")
-    .split(",")
-    .filter(Boolean)
-    .map(Number);
-  return "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
-}
-
-function buildSource(source: Record<string, any>, el: HTMLElement) {
-  const style = getComputedStyle(el)!;
-  const newSource = Object.keys(source).reduce((prev, next) => {
-    if (typeof source[next] === "number") {
-      const styleValue_ = style[next as any];
-      if (styleValue_) prev[next] = parseInt(styleValue_);
-      else prev[next] = 0;
-    } else {
-      prev[next] = new ColorTween(rgbaToHex(style[next as any]));
-    }
-    return prev;
-  }, {} as any);
-  return newSource;
-}
 
 export class ScrollTween<
   T extends Record<string, number | ColorTween> = any,
