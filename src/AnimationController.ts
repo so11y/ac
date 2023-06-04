@@ -25,7 +25,6 @@ export interface AnimationEvent extends Event {
 
 export class AnimationController extends EventTarget {
   animationType: AnimationType = AnimationType.NONE;
-  prevAnimationType: AnimationType = AnimationType.NONE;
   isRunning: boolean = false;
   timeLine: AnimationControllerTimeLine = {} as AnimationControllerTimeLine;
   private animationHelper: AnimationHelper = new AnimationHelper(this);
@@ -68,15 +67,18 @@ export class AnimationController extends EventTarget {
     const startTime = performance.now();
     const startProgress = this.timeLine.progress;
     const motion = () => {
-      if (this.isRunning === false) return;
-      animationHelper.notifyEvent(AnimationType.EXECUTE);
-      animationHelper.updateProgress(startTime, startProgress);
       animationHelper.RAFId = requestAnimationFrame(() => {
-        if (animationHelper.isDurationEnd()) {
+        if (this.isRunning === false) return;
+        const isDurationEnd = animationHelper.updateProgress(
+          startTime,
+          startProgress
+        );
+        if (isDurationEnd) {
           this.timeLine.lastFrame = true;
           this.isRunning = false;
           animationHelper.switchTypeAndAbort(AnimationType.END);
         } else {
+          animationHelper.notifyEvent(AnimationType.EXECUTE);
           motion();
         }
       });

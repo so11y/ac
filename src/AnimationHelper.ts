@@ -7,7 +7,6 @@ export class AnimationHelper {
   }
 
   public switchTypeAndAbort(type: AnimationType) {
-    this.ac.prevAnimationType = this.ac.animationType;
     this.ac.animationType = type;
     if (this.RAFId) {
       cancelAnimationFrame(this.RAFId!);
@@ -16,25 +15,26 @@ export class AnimationHelper {
   }
 
   public notifyEvent(eventName: string) {
+    const {
+      timeLine: { progress },
+    } = this.ac;
+    console.log(progress);
     const event = new CustomEvent(eventName, {
       detail: {
-        timeLine: this.ac.timeLine.progress,
+        timeLine: progress,
       },
     });
     this.ac.dispatchEvent(event);
-  }
-
-  public isDurationEnd() {
-    const { progress } = this.ac.timeLine;
-    if (progress > 1 || progress < 0) return true;
-    return false;
   }
 
   public updateProgress(startTime: number, startProgress: number) {
     const { timeLine } = this.ac;
     const elapsedTime = performance.now() - startTime;
     const progressDelta = (elapsedTime / this.ac.duration) * timeLine.direction;
-    timeLine.progress = startProgress + progressDelta;
+    const progress = startProgress + progressDelta;
+    const progress_ = progress > 1 ? 1 : progress < 0 ? 0 : progress;
+    timeLine.progress = progress_;
+    return progress_ >= 1 || progress_ <= 0 ? true : false;
   }
 
   public reStore() {
