@@ -75,23 +75,32 @@ export function buildSource(source: Record<string, any>, el: HTMLElement) {
   return newSource;
 }
 
+const handleTranslateXorTranslateY = (
+  el: HTMLElement,
+  source: Record<string, any>
+) => {
+  const x = source.translateX || 0;
+  const y = source.translateY || 0;
+  el.style.translate = `${x}px ${y}px`;
+};
+
 const buildAttr = {
-  build(source:Record<string,any>,key:string){
-
+  build(el: HTMLElement, source: Record<string, any>, key: string) {
+    if ((this as any)[key] !== undefined) {
+      return (this as any)[key](el, source, key);
+    }
+    if (typeof source[key] === "number") {
+      el.style[key as any] = `${source[key]}px`;
+    } else {
+      el.style[key as any] = source[key];
+    }
   },
-  translateX(){
-
-  }
+  translateX: handleTranslateXorTranslateY,
+  translateY: handleTranslateXorTranslateY,
 };
 
 export function defaultBuilder(this: any, source: Record<string, any>) {
-  // const el = this.el;
-  // Object.keys(source).forEach(key=>{
-  //   if(){
-
-  //   }
-  // })
-  // div3.style.translate = `${source.translateX || 0}px ${
-  //   source.translateY || 0
-  // }px`;
+  Object.keys(source).forEach((key) => {
+    buildAttr.build(this, source, key);
+  });
 }

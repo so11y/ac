@@ -9,7 +9,16 @@ import {
   TweenUserOptions,
   TweenBuilderTask,
 } from "./Tween";
-import { buildSource } from "./tweenHelper";
+import { buildSource, defaultBuilder } from "./tweenHelper";
+
+interface KeyframeContext {
+  ac: AnimationController;
+  index: number;
+  length: number;
+  taskFn: Function;
+  setPrevTween: Function;
+  getPrevTween: Function;
+}
 
 export class Keyframes<T extends Keyframe> {
   ac!: AnimationController;
@@ -18,15 +27,28 @@ export class Keyframes<T extends Keyframe> {
     this.ac = ac;
     return this;
   }
-  builder(task: TweenBuilderTask<Record<string, string>>) {
+  builder(task: TweenBuilderTask<Record<string, string>> = defaultBuilder) {
     const length = this.tweens.length;
+    const prevStyle = this.el.getAttribute("style");
     let source_ = {};
-    let taskFn = (value: Record<string, any>) => {
+    let prevTw: Tween | null = null;
+    function clearSource() {
+      setPrevTween(null);
+      source_ = {};
+    }
+    function setPrevTween(tw: Tween | null) {
+      prevTw = tw;
+    }
+    function getPrevTween() {
+      return prevTw;
+    }
+    const taskFn = (value: Record<string, any>) => {
       source_ = {
         ...source_,
         ...value,
       };
-      task(source_);
+      console.log("??");
+      task.call(this.el, source_);
     };
     for (let index = 0; index < this.tweens.length; index++) {
       const tween = this.tweens[index];
@@ -35,8 +57,14 @@ export class Keyframes<T extends Keyframe> {
         index,
         length,
         taskFn,
+        setPrevTween,
+        getPrevTween,
       });
     }
+    this.ac.addEventListener(AnimationType.NONE, (e) => {
+      clearSource();
+      this.el.setAttribute("style", prevStyle!);
+    });
   }
 }
 
@@ -50,16 +78,8 @@ export class Keyframe<T extends RecordTweenOptions = any> {
     } as KeyframeOptions
   ) {}
 
-  init(
-    el: HTMLElement,
-    options: {
-      ac: AnimationController;
-      index: number;
-      length: number;
-      taskFn: Function;
-    }
-  ) {
-    const { ac, index, length, taskFn } = options;
+  init(el: HTMLElement, options: KeyframeContext) {
+    const { ac, index, length, taskFn, setPrevTween, getPrevTween } = options;
     const delayedStart = index / length;
     const delayedEnd = (index + 1) / length;
     const prevDelay = (progress: number) => {
@@ -73,23 +93,27 @@ export class Keyframe<T extends RecordTweenOptions = any> {
         tw = tw || new Tween(beginSource, this.source, this.options);
         tw.builder(taskFn as any);
       }
+      setPrevTween(tw);
     };
-    const handleRunning = (timeLine = 0, isReverse = false) => {
-      maybeInitTw();
-      tw.running({
+    const handleRunning = (prevTw = tw, timeLine = 0, isReverse = false) => {
+      prevTw.running({
         detail: {
           timeLine,
           isReverse,
         },
       } as any);
     };
-    //todo lastFrame
-    ac.addEventListener(AnimationType.NONE, (e) => handleRunning());
     ac.addEventListener(AnimationType.EXECUTE, (e) => {
       const { detail } = e as AnimationEvent;
       const progress = detail.timeLine;
       if (progress >= delayedStart && progress <= delayedEnd) {
-        handleRunning(prevDelay(progress), detail.isReverse);
+        const prevTw = getPrevTween();
+        //prev lastFrame
+        if (prevTw && prevTw !== tw) {
+          handleRunning(prevTw, detail.isReverse ? 0 : 1, detail.isReverse);
+        }
+        maybeInitTw();
+        handleRunning(tw, prevDelay(progress), detail.isReverse);
       }
     });
   }

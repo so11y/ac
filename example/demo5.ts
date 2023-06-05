@@ -32,15 +32,7 @@ export default () => {
     }),
   ])
     .animate(ac)
-    .builder((source) => {
-      source.width && (div3.style.width = `${source.width}px `);
-      source.height && (div3.style.height = `${source.height}px `);
-      div3.style.translate = `${source.translateX || 0}px ${
-        source.translateY || 0
-      }px`;
-      // div3.style.borderRadius = `${source.borderRadius || 0}px`;
-      div3.style.backgroundColor = source.backgroundColor;
-    });
+    .builder();
 
   document
     .querySelector("#button1")!

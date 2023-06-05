@@ -44,7 +44,6 @@ export class AnimationController extends EventTarget {
     this.isRunning = false;
     this.animationHelper.reStore();
     animationHelper.switchTypeAndAbort(AnimationType.NONE);
-    animationHelper.notifyEvent(AnimationType.EXECUTE);
   }
 
   public play() {
