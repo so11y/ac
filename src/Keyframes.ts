@@ -47,7 +47,6 @@ export class Keyframes<T extends Keyframe> {
         ...source_,
         ...value,
       };
-      console.log("??");
       task.call(this.el, source_);
     };
     for (let index = 0; index < this.tweens.length; index++) {
