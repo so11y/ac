@@ -1,8 +1,10 @@
 {
   "scripts": {
-    "dev":"npx lent"
+    "dev": "vite",
+    "build": "vite build"
   },
   "dependencies": {
-    "lent": "^2.1.7"
+    "vite": "^6.0.7",
+    "vite-plugin-dts": "^4.4.0"
   }
 }
